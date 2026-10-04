@@ -1,0 +1,44 @@
+api:
+  name: gp2
+  version: v2
+  owner: payments-team
+
+gateway:
+
+  basePath: /payment
+
+  stripPath: false
+
+backend:
+
+  protocol: http
+
+  host: gp2-service
+
+  port: 8080
+
+plugins:
+
+  - name: jwt
+
+  - name: rate-limiting
+
+    config:
+
+      minute: 100
+
+      policy: local
+
+environments:
+
+  dev:
+
+    host: dev-api.company.com
+
+  uat:
+
+    host: uat-api.company.com
+
+  prod:
+
+    host: api.company.com
