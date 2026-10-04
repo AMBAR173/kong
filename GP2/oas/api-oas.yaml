@@ -1,0 +1,97 @@
+openapi: 3.0.3
+
+info:
+  title: GP2 Payments API
+  description: Payment processing APIs exposed through Kong Gateway
+  version: 1.0.0
+
+servers:
+  - url: https://api.company.com
+
+tags:
+  - name: Payments
+
+paths:
+
+  /payment/v2/payments:
+
+    get:
+      tags:
+        - Payments
+
+      summary: Get Payments
+
+      responses:
+        "200":
+          description: Successful response
+
+  /payment/v2/payment/request:
+
+    post:
+      tags:
+        - Payments
+
+      summary: Create Payment Request
+
+      requestBody:
+        required: true
+
+        content:
+
+          application/json:
+
+            schema:
+
+              $ref: '#/components/schemas/PaymentRequest'
+
+      responses:
+
+        "201":
+          description: Payment Created
+
+  /payment/v2/payment/status:
+
+    get:
+      tags:
+        - Payments
+
+      summary: Get Payment Status
+
+      parameters:
+
+        - name: paymentId
+
+          in: query
+
+          required: true
+
+          schema:
+            type: string
+
+      responses:
+
+        "200":
+          description: Payment Status
+
+components:
+
+  schemas:
+
+    PaymentRequest:
+
+      type: object
+
+      required:
+        - amount
+        - currency
+
+      properties:
+
+        amount:
+          type: number
+
+        currency:
+          type: string
+
+        merchantId:
+          type: string
