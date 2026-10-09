@@ -4,22 +4,34 @@ services:
   host: gp2-service
   port: 8080
   protocol: http
+  tags:
+  - gp2
   routes:
   - name: gp2-payment-v2-payments
     paths:
     - /payment/v2/payments
     strip_path: false
+    tags:
+    - gp2
   - name: gp2-payment-v2-payment-request
     paths:
     - /payment/v2/payment/request
     strip_path: false
+    tags:
+    - gp2
   - name: gp2-payment-v2-payment-status
     paths:
     - /payment/v2/payment/status
     strip_path: false
+    tags:
+    - gp2
 plugins:
 - name: jwt
+  tags:
+  - gp2
 - name: rate-limiting
+  tags:
+  - gp2
   config:
     minute: 100
     policy: local

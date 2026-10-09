@@ -4,12 +4,18 @@ info:
   title: GP2 Payments API
   description: Payment processing APIs exposed through Kong Gateway
   version: 1.0.0
+  license:
+    name: Internal
 
 servers:
   - url: https://api.company.com
 
 tags:
   - name: Payments
+    description: Payment related APIs
+
+security:
+  - BearerAuth: []
 
 paths:
 
@@ -19,11 +25,17 @@ paths:
       tags:
         - Payments
 
+      operationId: getPayments
+
       summary: Get Payments
 
       responses:
+
         "200":
           description: Successful response
+
+        "400":
+          description: Bad Request
 
   /payment/v2/payment/request:
 
@@ -31,29 +43,33 @@ paths:
       tags:
         - Payments
 
+      operationId: createPaymentRequest
+
       summary: Create Payment Request
 
       requestBody:
         required: true
 
         content:
-
           application/json:
-
             schema:
-
-              $ref: '#/components/schemas/PaymentRequest'
+              $ref: "#/components/schemas/PaymentRequest"
 
       responses:
 
         "201":
           description: Payment Created
 
+        "400":
+          description: Bad Request
+
   /payment/v2/payment/status:
 
     get:
       tags:
         - Payments
+
+      operationId: getPaymentStatus
 
       summary: Get Payment Status
 
@@ -73,7 +89,20 @@ paths:
         "200":
           description: Payment Status
 
+        "400":
+          description: Bad Request
+
 components:
+
+  securitySchemes:
+
+    BearerAuth:
+
+      type: http
+
+      scheme: bearer
+
+      bearerFormat: JWT
 
   schemas:
 

@@ -28,6 +28,7 @@ def main():
         "host": backend["host"],
         "port": backend["port"],
         "protocol": backend["protocol"],
+        "tags": [api_name],
         "routes": []
     }
 
@@ -37,7 +38,8 @@ def main():
             {
                 "name": route_name(api_name, path),
                 "paths": [path],
-                "strip_path": config["gateway"]["stripPath"]
+                "strip_path": config["gateway"]["stripPath"],
+                "tags": [api_name]
             }
         )
 
@@ -46,7 +48,8 @@ def main():
     for plugin in config.get("plugins", []):
 
         plugin_entry = {
-            "name": plugin["name"]
+            "name": plugin["name"],
+            "tags": [api_name]
         }
 
         if "config" in plugin:

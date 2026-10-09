@@ -1,0 +1,7 @@
+{
+  "name": "gp2-api",
+  "version": "1.0.0",
+  "scripts": {
+    "lint:oas": "redocly lint openapi/gp2-oas.yaml"
+  }
+}
