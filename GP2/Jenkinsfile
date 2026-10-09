@@ -1,17 +1,16 @@
 pipeline {
-    agent any {
-        stages {
-            stage('checkout') {
-                steps {
-                    checkout scm
-                }
+    agent any
+    stages {
+        stage('checkout') {
+            steps {
+                checkout scm
             }
-            stage('Validate openapi spec') {
-                steps {
-                    sh '''
-                    redocly lint GP2/oas/api-oas.yaml
-                    '''
-                }
+        }
+        stage('Validate openapi spec') {
+            steps {
+                sh '''
+                redocly lint GP2/oas/api-oas.yaml
+                '''
             }
         }
     }
