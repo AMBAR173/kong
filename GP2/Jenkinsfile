@@ -20,5 +20,12 @@ pipeline {
                 '''
             }
         }
+        stage('Validate kong config') {
+            steps {
+                sh '''
+                deck file validate GP2/generated/kong.yaml
+                '''
+            }
+        }
     }
 }
