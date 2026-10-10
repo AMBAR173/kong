@@ -13,5 +13,12 @@ pipeline {
                 '''
             }
         }
+        stage('Generate kong config') {
+            steps {
+                sh '''
+                python3 GP2/scripts/generate.py
+                '''
+            }
+        }
     }
 }
