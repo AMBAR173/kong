@@ -55,11 +55,11 @@ pipeline {
                             set -eu
                             curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
                               --upload-file GP2/oas/api-oas.yaml \
-                              "http://192.168.1.8:8081/repository/kong_config_release/GP2/specification/gp2_${ARTIFACT_VERSION}.yaml"
+                              "http://192.168.1.8:8081/repository/kong_config_releases/GP2/specification/gp2_${ARTIFACT_VERSION}.yaml"
 
                             curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
                               --upload-file GP2/generated/kong.yaml \
-                              "http://192.168.1.8:8081/repository/kong_config_release/GP2/gateway-config/gp2_${ARTIFACT_VERSION}.yaml"
+                              "http://192.168.1.8:8081/repository/kong_config_releases/GP2/gateway-config/gp2_${ARTIFACT_VERSION}.yaml"
                             '''
                         }
                     }
