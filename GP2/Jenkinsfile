@@ -30,9 +30,41 @@ pipeline {
         stage('Kong Diff') {
             steps {
                 sh '''
-                deck gateway diff --kong-addr http://192.168.1.13:32015 --select-tag gp2 ./GP2/generated/kong.yaml
+                deck gateway diff --kong-addr http://192.168.1.8:32015 --select-tag gp2 ./GP2/generated/kong.yaml
                 '''
             }
         }
-    }
+        stage('Publish to Nexus') {
+            steps {
+                script {
+                    def version = sh(script: """
+                    grep -m 1 '^[[:space:]]*version:' GP2/oas/api-oas.yaml | awk '{print \$2}'
+                    """, returnStdout: true).trim()
+
+                    if (!version) {
+                        error('Could not determine the OpenAPI version from GP2/oas/api-oas.yaml')
+                    }
+
+                    withCredentials([usernamePassword(
+                        credentialsId: 'nexus-cred',
+                        usernameVariable: 'NEXUS_USER',
+                        passwordVariable: 'NEXUS_PASS'
+                    )]) {
+                        withEnv(["ARTIFACT_VERSION=${version}"]) {
+                            sh '''
+                            set -eu
+                            curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
+                              --upload-file GP2/oas/api-oas.yaml \
+                              "http://192.168.1.8:8081/repository/kong_config_release/GP2/specification/gp2_${ARTIFACT_VERSION}.yaml"
+
+                            curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
+                              --upload-file GP2/generated/kong.yaml \
+                              "http://192.168.1.8:8081/repository/kong_config_release/GP2/gateway-config/gp2_${ARTIFACT_VERSION}.yaml"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+    }   
 }
