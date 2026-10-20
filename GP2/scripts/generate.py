@@ -1,7 +1,6 @@
 import yaml
 from pathlib import Path
 
-
 OAS_FILE = "GP2/oas/api-oas.yaml"
 CONFIG_FILE = "GP2/config/api-config.yaml"
 OUTPUT_FILE = "GP2/generated/kong.yaml"
@@ -20,6 +19,7 @@ def main():
         config = yaml.safe_load(f)
 
     api_name = config["api"]["name"]
+    api_version = oas.get("info", {}).get("version", "unknown")
 
     backend = config["backend"]
 
@@ -28,18 +28,40 @@ def main():
         "host": backend["host"],
         "port": backend["port"],
         "protocol": backend["protocol"],
-        "tags": [api_name],
+        "tags": [
+            api_name,
+            f"version-{api_version}"
+        ],
         "routes": []
     }
 
-    for path in oas.get("paths", {}).keys():
+    for path, path_item in oas.get("paths", {}).items():
+
+        methods = []
+
+        for method in path_item.keys():
+
+            if method.lower() in [
+                "get",
+                "post",
+                "put",
+                "delete",
+                "patch",
+                "options",
+                "head"
+            ]:
+                methods.append(method.upper())
 
         service["routes"].append(
             {
                 "name": route_name(api_name, path),
                 "paths": [path],
+                "methods": methods,
                 "strip_path": config["gateway"]["stripPath"],
-                "tags": [api_name]
+                "tags": [
+                    api_name,
+                    f"version-{api_version}"
+                ]
             }
         )
 
@@ -49,7 +71,10 @@ def main():
 
         plugin_entry = {
             "name": plugin["name"],
-            "tags": [api_name]
+            "tags": [
+                api_name,
+                f"version-{api_version}"
+            ]
         }
 
         if "config" in plugin:
