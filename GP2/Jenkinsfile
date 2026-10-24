@@ -66,5 +66,29 @@ pipeline {
                 }
             }
         }
+        stage("Update GitOps Repo") {
+            steps {
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'github-token',
+                        usernameVariable: 'GIT_USER',
+                        passwordVariable: 'GIT_TOKEN'
+                    )])
+                    {
+                    sh '''
+                    rm -rf test-repo
+                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git test-repo                        sed -i 's/1.0.0/1.1.0/g' release.yaml
+                    ls -lrt test-repo
+                    '''
+            }
+        }
     }   
 }
+
+
+
+
+
+
+
+
