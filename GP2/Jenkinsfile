@@ -70,15 +70,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([usernamePassword(
-                        credentialsId: 'github-token',
+                        credentialsId: 'git-token',
                         usernameVariable: 'GIT_USER',
                         passwordVariable: 'GIT_TOKEN'
                     )])
                     {
                     sh '''
-                    rm -rf test-repo
-                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git test-repo
-                    ls -lrt test-repo
+                    echo "$GIT_USER"
+                    #rm -rf test-repo
+                    #git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git test-repo
+                    #ls -lrt test-repo
                     '''
                 }
             }
