@@ -76,16 +76,19 @@ pipeline {
                     )])
                     {
                     sh '''
-                    echo "$GIT_USER"
                     rm -rf test-repo
+                    git config --global credentials.helper store
+                    cat > ~/.git-credentials <<EOF
+                    https://${GIT_USER}:${GIT_TOKEN}@github.com
+                    EOF
                     git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git test-repo
                     ls -lrt test-repo
                     '''
+                    }
                 }
-            }
-        }   
+            }   
+        }
     }
-}
 }
 
 
