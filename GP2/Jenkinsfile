@@ -1,100 +1,136 @@
 pipeline {
     agent any
+
     stages {
-        stage('checkoutt') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        stage('Validate openapi spec') {
+
+        stage('Validate OpenAPI spec') {
             steps {
                 sh '''
-                redocly lint GP2/oas/api-oas.yaml
+                    redocly lint GP2/oas/api-oas.yaml
                 '''
             }
         }
-        stage('Generate kong config') {
+
+        stage('Generate Kong config') {
             steps {
                 sh '''
-                python3 GP2/scripts/generate.py
+                    python3 GP2/scripts/generate.py
                 '''
             }
         }
-        stage('Validate kong config') {
+
+        stage('Validate Kong config') {
             steps {
                 sh '''
-                deck file validate GP2/generated/kong.yaml
+                    deck file validate GP2/generated/kong.yaml
                 '''
             }
         }
+
         stage('Kong Diff') {
             steps {
                 sh '''
-                deck gateway diff --kong-addr http://192.168.1.13:32015 --select-tag gp2 ./GP2/generated/kong.yaml
+                    deck gateway diff --kong-addr http://192.168.1.13:32015 --select-tag gp2 ./GP2/generated/kong.yaml
                 '''
             }
         }
+
         stage('Publish to Nexus') {
             steps {
                 script {
-                    def version = sh(script: """
-                    grep -m 1 '^[[:space:]]*version:' GP2/oas/api-oas.yaml | awk '{print \$2}'
-                    """, returnStdout: true).trim()
+                    def version = sh(
+                        script: """
+                            grep -m 1 '^[[:space:]]*version:' GP2/oas/api-oas.yaml | awk '{print \$2}'
+                        """,
+                        returnStdout: true
+                    ).trim()
 
                     if (!version) {
                         error('Could not determine the OpenAPI version from GP2/oas/api-oas.yaml')
                     }
 
-                    withCredentials([usernamePassword(
-                        credentialsId: 'nexus-cred',
-                        usernameVariable: 'NEXUS_USER',
-                        passwordVariable: 'NEXUS_PASS'
-                    )]) {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'nexus-cred',
+                            usernameVariable: 'NEXUS_USER',
+                            passwordVariable: 'NEXUS_PASS'
+                        )
+                    ]) {
                         withEnv(["ARTIFACT_VERSION=${version}"]) {
                             sh '''
-                            set -eu
-                            curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
-                              --upload-file GP2/oas/api-oas.yaml \
-                              "http://192.168.1.7:8081/repository/kong_config_releases/GP2/specification/gp2_${ARTIFACT_VERSION}.yaml"
+                                set -eu
 
-                            curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
-                              --upload-file GP2/generated/kong.yaml \
-                              "http://192.168.1.7:8081/repository/kong_config_releases/GP2/gateway-config/gp2_${ARTIFACT_VERSION}.yaml"
+                                curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
+                                    --upload-file GP2/oas/api-oas.yaml \
+                                    "http://192.168.1.7:8081/repository/kong_config_releases/GP2/specification/gp2_${ARTIFACT_VERSION}.yaml"
+
+                                curl --fail --show-error --silent --user "$NEXUS_USER:$NEXUS_PASS" \
+                                    --upload-file GP2/generated/kong.yaml \
+                                    "http://192.168.1.7:8081/repository/kong_config_releases/GP2/gateway-config/gp2_${ARTIFACT_VERSION}.yaml"
                             '''
                         }
                     }
                 }
             }
         }
-        stage("Update GitOps Repo") {
+
+        stage('Update GitOps Repo') {
             steps {
                 script {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'git-token',
-                        usernameVariable: 'GIT_USER',
-                        passwordVariable: 'GIT_TOKEN'
-                    )])
-                    {
-                    sh '''
-                    rm -rf test-repo
-                    git config --global credentials.helper store
-                    cat > ~/.git-credentials <<EOF
-                    https://${GIT_USER}:${GIT_TOKEN}@github.com
-                    EOF
-                    git clone https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git test-repo
-                    ls -lrt test-repo
-                    '''
+                    def version = sh(
+                        script: """
+                            grep -m 1 '^[[:space:]]*version:' GP2/oas/api-oas.yaml | awk '{print \$2}'
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    if (!version) {
+                        error('Could not determine the OpenAPI version from GP2/oas/api-oas.yaml')
+                    }
+
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'git-token',
+                            usernameVariable: 'GIT_USER',
+                            passwordVariable: 'GIT_TOKEN'
+                        )
+                    ]) {
+                        withEnv(["ARTIFACT_VERSION=${version}"]) {
+                            sh '''
+                                rm -rf test-repo
+
+                                git config --global credential.helper store
+
+                                cat > ~/.git-credentials <<EOF
+https://${GIT_USER}:${GIT_TOKEN}@github.com
+EOF
+
+                                git clone https://github.com/AMBAR173/kong-deployments.git test-repo
+
+                                cd test-repo/dev/GP2
+
+                                cat > release.yaml <<EOF
+api: GP2
+version: ${ARTIFACT_VERSION}
+artifact: gp2_${ARTIFACT_VERSION}.yaml
+EOF
+
+                                git config user.name "Jenkins"
+                                git config user.email "jenkins@local"
+
+                                git add release.yaml
+                                git commit -m "Promote GP2 ${ARTIFACT_VERSION}" || true
+                                git push origin main
+                            '''
+                        }
                     }
                 }
-            }   
+            }
         }
     }
 }
-
-
-
-
-
-
-
-
