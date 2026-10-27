@@ -125,7 +125,7 @@ EOF
 
                                 git add release.yaml
                                 git commit -m "Promote GP2 ${ARTIFACT_VERSION}" || true
-                                git push origin main
+                                git push origin HEAD:main
                             '''
                         }
                     }
