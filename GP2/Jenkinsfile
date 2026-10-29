@@ -112,9 +112,8 @@ EOF
 
                                 git clone https://github.com/AMBAR173/kong-deployments.git test-repo
 
-                                cd test-repo/dev/GP2
+                                cd test-repo
                                 git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git
-                                cd test-repo/dev/GP2
 
                                 cat > release.yaml <<EOF
 api: GP2
@@ -125,7 +124,7 @@ EOF
                                 git config user.name "Jenkins"
                                 git config user.email "jenkins@local"
 
-                                git add release.yaml
+                                git add dev/GP2/release.yaml
                                 git commit -m "Promote GP2 ${ARTIFACT_VERSION}" || true
                                 git push origin HEAD:main
                             '''
