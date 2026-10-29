@@ -102,20 +102,29 @@ pipeline {
                     ]) {
                         withEnv(["ARTIFACT_VERSION=${version}"]) {
                             sh '''
+                                set -eu
+
                                 rm -rf test-repo
+                                askpass="$(mktemp)"
+                                trap 'rm -f "$askpass"' EXIT
 
-                                git config --global credential.helper store
-
-                                cat > ~/.git-credentials <<EOF
-https://${GIT_USER}:${GIT_TOKEN}@github.com
+                                cat > "$askpass" <<'EOF'
+#!/bin/sh
+case "$1" in
+    *Username*) printf '%s\n' "$GIT_USER" ;;
+    *Password*) printf '%s\n' "$GIT_TOKEN" ;;
+    *) exit 1 ;;
+esac
 EOF
+                                chmod 700 "$askpass"
+                                export GIT_ASKPASS="$askpass"
+                                export GIT_TERMINAL_PROMPT=0
 
                                 git clone https://github.com/AMBAR173/kong-deployments.git test-repo
 
                                 cd test-repo
-                                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git
 
-                                cat > release.yaml <<EOF
+                                cat > dev/GP2/release.yaml <<EOF
 api: GP2
 version: ${ARTIFACT_VERSION}
 artifact: gp2_${ARTIFACT_VERSION}.yaml
@@ -125,7 +134,11 @@ EOF
                                 git config user.email "jenkins@local"
 
                                 git add dev/GP2/release.yaml
-                                git commit -m "Promote GP2 ${ARTIFACT_VERSION}" || true
+                                if git diff --cached --quiet; then
+                                    echo "No GitOps release change to commit"
+                                else
+                                    git commit -m "Promote GP2 ${ARTIFACT_VERSION}"
+                                fi
                                 git push origin HEAD:main
                             '''
                         }
