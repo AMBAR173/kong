@@ -113,6 +113,8 @@ EOF
                                 git clone https://github.com/AMBAR173/kong-deployments.git test-repo
 
                                 cd test-repo/dev/GP2
+                                git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/AMBAR173/kong-deployments.git
+                                cd /dev/GP2
 
                                 cat > release.yaml <<EOF
 api: GP2
