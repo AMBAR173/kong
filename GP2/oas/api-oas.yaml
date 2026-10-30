@@ -3,7 +3,7 @@
   info:
     title: GP2 Payments API
     description: Payment processing APIs exposed through Kong Gateway
-    version: 1.1.0
+    version: 1.1.1
     license:
       name: Internal
 
