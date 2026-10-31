@@ -143,8 +143,9 @@ EOF
                                 git config user.email "jenkins@local"
 
                                 git add dev/GP2/release.yaml
+                                git add dev/GP2/configmap.yaml
                                 if git diff --cached --quiet; then
-                                    echo "No GitOps release change to commit"
+                                    echo "No GitOps release chaange to commit"
                                 else
                                     git commit -m "Promote GP2 ${ARTIFACT_VERSION}"
                                 fi
