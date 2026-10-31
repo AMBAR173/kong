@@ -129,7 +129,16 @@ api: GP2
 version: ${ARTIFACT_VERSION}
 artifact: gp2_${ARTIFACT_VERSION}.yaml
 EOF
-
+                                cat > dev/GP2/configmap.yaml <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gp2-release
+  namespace: kong-deployments
+data:
+  version: "${ARTIFACT_VERSION}"
+  artifact: "gp2_${ARTIFACT_VERSION}.yaml"
+EOF
                                 git config user.name "Jenkins"
                                 git config user.email "jenkins@local"
 
