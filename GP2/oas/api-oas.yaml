@@ -63,6 +63,32 @@
           "400":
             description: Bad Request
 
+    /payment/v2/make/payment:
+
+      post:
+        tags:
+          - Payments
+
+        operationId: makePayment
+
+        summary: Make Payment
+
+        requestBody:
+          required: true
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentRequest"
+
+        responses:
+
+          "201":
+            description: Payment Created
+
+          "400":
+            description: Bad Request
+
     /payment/v2/payment/status:
 
       get:
