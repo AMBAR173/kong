@@ -40,7 +40,7 @@ plugins:
       bandwidth_metrics: true
   - name: opentelemetry
     config:
-      traces_endpoint: otel-collector.observab.svc.cluster.local:4318/v1/traces
+      traces_endpoint: http://otel-collector.observab.svc.cluster.local:4318/v1/traces
 
 environments:
 
