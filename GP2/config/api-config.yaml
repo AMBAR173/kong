@@ -41,6 +41,7 @@ plugins:
   - name: opentelemetry
     config:
       traces_endpoint: http://otel-collector.observab.svc.cluster.local:4318/v1/traces
+      http_response_header_for_traceid: X-Trace-Id
 
 environments:
 
